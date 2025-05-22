@@ -42,8 +42,7 @@ def forecast_price(data, name):
     model.fit(X, y)
 
     next_day = [[X['Days'].max() + 1]]
-    predicted_price = model.predict(next_day)[0]
-
+    predicted_price = model.predict(next_day)[0]  # หรือ .item()
     st.write(f"📌 พยากรณ์ราคา {name} ในวันถัดไป: **${predicted_price:,.2f}**")
 
     # Plot fit line
