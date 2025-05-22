@@ -41,4 +41,40 @@ data['Stoch_D'] = stoch.stoch_signal()
 def forecast_price(df):
     df = df.copy()
     df['Day'] = np.arange(len(df)).reshape(-1, 1)
-    X = df['Day'].values.resha
+    X = df['Day'].values.reshape(-1, 1)
+    y = df['Close'].values.reshape(-1, 1)
+    model = LinearRegression()
+    model.fit(X, y)
+    next_day = np.array([[len(df)]])
+    pred_price = model.predict(next_day)[0][0]
+    return pred_price
+
+predicted_price = forecast_price(data)
+
+# แสดงกราฟราคากับ MACD
+st.subheader(f"📈 ราคาและ MACD: {crypto}")
+fig1, ax1 = plt.subplots(figsize=(12, 6))
+ax1.plot(data['Date'], data['Close'], label='Close Price', color='blue')
+ax1.set_ylabel("Price (USD)")
+ax1.legend(loc="upper left")
+
+ax2 = ax1.twinx()
+ax2.plot(data['Date'], data['MACD'], label="MACD", color='green')
+ax2.plot(data['Date'], data['MACD_Signal'], label="Signal", color='red')
+ax2.set_ylabel("MACD")
+ax2.legend(loc="upper right")
+st.pyplot(fig1)
+
+# แสดง Stochastic Oscillator
+st.subheader("📉 Stochastic Oscillator")
+fig2, ax3 = plt.subplots(figsize=(12, 3))
+ax3.plot(data['Date'], data['Stoch_K'], label='%K', color='purple')
+ax3.plot(data['Date'], data['Stoch_D'], label='%D', color='orange')
+ax3.axhline(80, color='gray', linestyle='--')
+ax3.axhline(20, color='gray', linestyle='--')
+ax3.legend()
+st.pyplot(fig2)
+
+# แสดงราคาที่คาดการณ์
+st.subheader("🔮 พยากรณ์ราคาวันถัดไป")
+st.success(f"📌 ราคาที่คาดการณ์สำหรับ {crypto} คือ: **${predicted_price:,.2f} USD**")
