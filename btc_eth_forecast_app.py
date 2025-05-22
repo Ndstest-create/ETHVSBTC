@@ -3,39 +3,42 @@ import yfinance as yf
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
-import ta
+from ta.momentum import StochasticOscillator
+from ta.trend import MACD
+from sklearn.linear_model import LinearRegression
+import numpy as np
 
-st.set_page_config(page_title="Crypto Dashboard", layout="wide")
-st.title("📈 Crypto Investment Dashboard")
+st.set_page_config(page_title="Crypto Multi-Asset Dashboard", layout="wide")
+st.title("📊 Crypto Dashboard: วิเคราะห์ราคาคริปโตและอินดิเคเตอร์")
 
 # Sidebar
 crypto = st.sidebar.selectbox("เลือกเหรียญ", ["BTC-USD", "ETH-USD", "BNB-USD", "SOL-USD"])
 start_date = st.sidebar.date_input("จากวันที่", value=datetime(2021, 1, 1))
 end_date = datetime.today().strftime('%Y-%m-%d')
 
-# Load data
+# โหลดข้อมูล
 @st.cache_data
 def load_data(symbol, start, end):
-    data = yf.download(symbol, start=start, end=end)
-    data = data[['Close', 'Volume']]
-    data.dropna(inplace=True)
-    return data
+    df = yf.download(symbol, start=start, end=end)
+    df = df[['Close']]
+    df.dropna(inplace=True)
+    df.reset_index(inplace=True)
+    return df
 
 data = load_data(crypto, start_date, end_date)
-data['SMA20'] = data['Close'].rolling(20).mean()
-data['SMA50'] = data['Close'].rolling(50).mean()
 
-# Plot
-st.subheader(f"📊 ราคา {crypto} พร้อม SMA(20, 50)")
-fig, ax = plt.subplots(figsize=(12,6))
-ax.plot(data['Close'], label='Close Price', color='blue')
-ax.plot(data['SMA20'], label='SMA 20', color='green', linestyle='--')
-ax.plot(data['SMA50'], label='SMA 50', color='red', linestyle='--')
-ax.set_title(f"{crypto} Price Chart")
-ax.set_ylabel("USD")
-ax.legend()
-st.pyplot(fig)
+# คำนวณ MACD
+macd = MACD(close=data['Close'])
+data['MACD'] = macd.macd()
+data['MACD_Signal'] = macd.macd_signal()
 
-st.subheader("🔎 ข้อมูลล่าสุด")
-st.dataframe(data.tail())
+# คำนวณ Stochastic Oscillator
+stoch = StochasticOscillator(high=data['Close'], low=data['Close'], close=data['Close'])
+data['Stoch_K'] = stoch.stoch()
+data['Stoch_D'] = stoch.stoch_signal()
 
+# พยากรณ์ราคาวันถัดไป
+def forecast_price(df):
+    df = df.copy()
+    df['Day'] = np.arange(len(df)).reshape(-1, 1)
+    X = df['Day'].values.resha
