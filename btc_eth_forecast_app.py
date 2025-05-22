@@ -12,7 +12,9 @@ st.title("🔮 พยากรณ์และเปรียบเทียบ�
 @st.cache_data
 def load_data(symbol):
     data = yf.download(symbol, start="2021-01-01", end=datetime.today().strftime("%Y-%m-%d"))
-    return data['Close'].reset_index()
+    data = data[['Close']].copy()
+    data.reset_index(inplace=True)
+    return data
 
 btc_data = load_data('BTC-USD')
 eth_data = load_data('ETH-USD')
