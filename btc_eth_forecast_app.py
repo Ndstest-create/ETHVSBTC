@@ -42,10 +42,10 @@ def forecast_price(data, name):
     model.fit(X, y)
 
     next_day = [[X['Days'].max() + 1]]
-    predicted_price = model.predict(next_day)[0]  # หรือ .item()
+    predicted_price = float(model.predict(next_day)[0])  # 👈 ป้องกัน TypeError
+
     st.write(f"📌 พยากรณ์ราคา {name} ในวันถัดไป: **${predicted_price:,.2f}**")
 
-    # Plot fit line
     fig2, ax2 = plt.subplots()
     ax2.scatter(X, y, alpha=0.3, label='Historical')
     ax2.plot(X, model.predict(X), color='red', label='Linear Fit')
@@ -54,6 +54,7 @@ def forecast_price(data, name):
     ax2.set_title(f'{name} Price Trend')
     ax2.legend()
     st.pyplot(fig2)
+
 
 forecast_price(btc_data, "Bitcoin (BTC)")
 forecast_price(eth_data, "Ethereum (ETH)")
